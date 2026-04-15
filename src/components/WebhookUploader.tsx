@@ -16,8 +16,10 @@ interface Transmission {
   timestamp: string;
 }
 
+// Default webhook URL - can be updated here or moved to .env
+const DEFAULT_WEBHOOK_URL = 'https://webhook.site/placeholder';
+
 export default function WebhookUploader() {
-  const [webhookUrl, setWebhookUrl] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -27,11 +29,47 @@ export default function WebhookUploader() {
     { id: '3', fileName: 'system_log_dump.txt', status: 'Delivered', timestamp: new Date().toISOString() },
   ]);
 
+  const uploadFile = async (selectedFile: File) => {
+    setStatus('uploading');
+    setError(null);
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    formData.append('fileName', selectedFile.name);
+    formData.append('fileType', selectedFile.type);
+    formData.append('timestamp', new Date().toISOString());
+
+    try {
+      const response = await fetch(DEFAULT_WEBHOOK_URL, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        setStatus('success');
+        toast.success('File sent successfully!');
+        setHistory(prev => [{
+          id: Math.random().toString(36).substr(2, 9),
+          fileName: selectedFile.name,
+          status: 'Delivered',
+          timestamp: new Date().toISOString()
+        }, ...prev].slice(0, 5));
+      } else {
+        throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+      }
+    } catch (err) {
+      setStatus('error');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to send file';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    }
+  };
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
-      setFile(acceptedFiles[0]);
-      setStatus('idle');
-      setError(null);
+      const selectedFile = acceptedFiles[0];
+      setFile(selectedFile);
+      uploadFile(selectedFile);
     }
   }, []);
 
@@ -53,47 +91,6 @@ export default function WebhookUploader() {
     setError(null);
   };
 
-  const handleSend = async () => {
-    if (!file || !webhookUrl) {
-      toast.error('Please provide both a file and a webhook URL');
-      return;
-    }
-
-    setStatus('uploading');
-    setError(null);
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('fileName', file.name);
-    formData.append('fileType', file.type);
-    formData.append('timestamp', new Date().toISOString());
-
-    try {
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        setStatus('success');
-        toast.success('File sent successfully!');
-        setHistory(prev => [{
-          id: Math.random().toString(36).substr(2, 9),
-          fileName: file.name,
-          status: 'Delivered',
-          timestamp: new Date().toISOString()
-        }, ...prev].slice(0, 5));
-      } else {
-        throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
-      }
-    } catch (err) {
-      setStatus('error');
-      const errorMessage = err instanceof Error ? err.message : 'Failed to send file';
-      setError(errorMessage);
-      toast.error(errorMessage);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center p-4 font-sans text-[#111827]">
       <div className="absolute top-10 left-10 font-extrabold text-lg tracking-[-0.5px]">
@@ -110,14 +107,14 @@ export default function WebhookUploader() {
           <CardHeader className="p-0 text-center mb-8">
             <CardTitle className="text-2xl font-bold tracking-tight mb-2">Transmit Document</CardTitle>
             <CardDescription className="text-[#6B7280] text-sm">
-              Select a file and specify your target webhook endpoint.
+              Drop a file to instantly transmit it to the secure endpoint.
             </CardDescription>
           </CardHeader>
 
           <CardContent className="p-0 space-y-6">
             {/* File Upload Area */}
             <AnimatePresence mode="wait">
-              {!file ? (
+              {!file || status === 'idle' ? (
                 <motion.div
                   key="dropzone"
                   initial={{ opacity: 0, scale: 0.98 }}
@@ -157,46 +154,20 @@ export default function WebhookUploader() {
                       </p>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleRemoveFile}
-                    className="text-[#6B7280] hover:text-destructive hover:bg-destructive/10 rounded-full h-8 w-8"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {status === 'uploading' && <Loader2 className="w-4 h-4 animate-spin text-[#3B82F6]" />}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleRemoveFile}
+                      className="text-[#6B7280] hover:text-destructive hover:bg-destructive/10 rounded-full h-8 w-8"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* Webhook URL Input */}
-            <div className="space-y-2">
-              <Label htmlFor="webhook-url" className="text-[12px] font-semibold uppercase tracking-wider text-[#6B7280]">
-                Destination Webhook
-              </Label>
-              <Input
-                id="webhook-url"
-                placeholder="https://api.yourdomain.com/webhooks/v1/..."
-                value={webhookUrl}
-                onChange={(e) => setWebhookUrl(e.target.value)}
-                className="h-12 border-[#E5E7EB] rounded-md px-4 text-sm focus-visible:ring-[#3B82F6] focus-visible:ring-offset-0 focus-visible:border-[#3B82F6] transition-all"
-              />
-            </div>
-
-            <Button
-              className="w-full h-12 bg-[#111827] hover:bg-[#111827]/90 text-white font-semibold text-sm rounded-md transition-all"
-              disabled={!file || !webhookUrl || status === 'uploading'}
-              onClick={handleSend}
-            >
-              {status === 'uploading' ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                'Send to Webhook'
-              )}
-            </Button>
 
             <AnimatePresence>
               {status === 'success' && (
