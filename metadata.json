@@ -1,0 +1,6 @@
+{
+  "name": "HookDrop",
+  "description": "A clean utility to upload documents and send them to any webhook endpoint.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
