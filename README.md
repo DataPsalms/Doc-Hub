@@ -1,20 +1,73 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# HookDrop: Secure Document Webhook Bridge
 
-# Run and deploy your AI Studio app
+HookDrop is a polished, full-stack web application designed to streamline the transmission of documents to custom webhook endpoints. It features a minimalist, professional interface with automated handling of mixed content and CORS issues via a built-in server-side proxy.
 
-This contains everything you need to run your app locally.
+## Features
 
-View your app in AI Studio: https://ai.studio/apps/70306e6a-933c-4ae7-8344-d15ddc5175f4
+-   **Clean Minimalism Design**: A refined, focused user interface built with Tailwind CSS.
+-   **Automated Transmission**: Simply drop a file to instantly trigger a secure server-to-server transmission.
+-   **Server-Side Proxy**: Bypasses browser security restrictions (CORS, Mixed Content) by forwarding files through an Express backend.
+-   **Transmission History**: Real-time feedback and a history log of recent document deliveries.
+-   **Responsive Layout**: Optimized for both desktop and mobile productivity.
 
-## Run Locally
+## Tech Stack
 
-**Prerequisites:**  Node.js
+-   **Frontend**: React 19, Vite, Tailwind CSS, Motion, shadcn/ui
+-   **Backend**: Node.js, Express, Mutter
+-   **Environment**: TypeScript
 
+## Getting Started
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### Prerequisites
+
+-   Node.js (v18 or higher recommended)
+-   npm
+
+### Installation
+
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/your-username/hookdrop.git
+    cd hookdrop
+    ```
+
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+
+3.  Configure environment variables:
+    Create a `.env` file in the root directory and add your webhook URL:
+    ```env
+    VITE_WEBHOOK_URL="https://your-webhook-endpoint.com/api"
+    ```
+    *(See `.env.example` for reference)*
+
+### Running the App
+
+-   **Development Mode**:
+    Starts the Express server with Vite middleware for hot-reloading:
+    ```bash
+    npm run dev
+    ```
+
+-   **Production Mode**:
+    1. Build the frontend:
+       ```bash
+       npm run build
+       ```
+    2. Start the production server:
+       ```bash
+       NODE_ENV=production npm start
+       ```
+
+## Project Structure
+
+-   `server.ts`: Express server entry point and API proxy logic.
+-   `src/App.tsx`: Main React component.
+-   `src/components/WebhookUploader.tsx`: Core transmission and UI logic.
+-   `src/index.css`: Global styles and Tailwind theme configuration.
+
+## License
+
+This project is licensed under the Apache-2.0 License.
