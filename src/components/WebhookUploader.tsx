@@ -16,8 +16,8 @@ interface Transmission {
   timestamp: string;
 }
 
-// Default webhook URL - can be updated here or moved to .env
-const DEFAULT_WEBHOOK_URL = 'https://webhook.site/placeholder';
+// We use a server-side proxy at /api/transmit to avoid CORS/Mixed Content issues
+// The actual webhook URL is read from environment variables on the server
 
 export default function WebhookUploader() {
   const [file, setFile] = useState<File | null>(null);
@@ -40,7 +40,7 @@ export default function WebhookUploader() {
     formData.append('timestamp', new Date().toISOString());
 
     try {
-      const response = await fetch(DEFAULT_WEBHOOK_URL, {
+      const response = await fetch('/api/transmit', {
         method: 'POST',
         body: formData,
       });
@@ -55,7 +55,8 @@ export default function WebhookUploader() {
           timestamp: new Date().toISOString()
         }, ...prev].slice(0, 5));
       } else {
-        throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server responded with ${response.status}`);
       }
     } catch (err) {
       setStatus('error');
