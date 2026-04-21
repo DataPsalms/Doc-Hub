@@ -40,6 +40,7 @@ export default function WebhookUploader() {
     formData.append('fileSize', selectedFile.size.toString());
     formData.append('userId', 'Abbyingor@gmail.com');
     formData.append('timestamp', new Date().toISOString());
+    formData.append('date', new Date().toISOString().split('T')[0]);
 
     try {
       const response = await fetch('/api/transmit', {

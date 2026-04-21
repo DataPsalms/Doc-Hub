@@ -44,6 +44,7 @@ async function startServer() {
       if (req.body.fileSize) formData.append('fileSize', req.body.fileSize);
       if (req.body.userId) formData.append('userId', req.body.userId);
       if (req.body.timestamp) formData.append('timestamp', req.body.timestamp);
+      if (req.body.date) formData.append('date', req.body.date);
 
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
