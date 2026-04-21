@@ -41,6 +41,8 @@ async function startServer() {
       // Pass through other fields if present
       if (req.body.fileName) formData.append('fileName', req.body.fileName);
       if (req.body.fileType) formData.append('fileType', req.body.fileType);
+      if (req.body.fileSize) formData.append('fileSize', req.body.fileSize);
+      if (req.body.userId) formData.append('userId', req.body.userId);
       if (req.body.timestamp) formData.append('timestamp', req.body.timestamp);
 
       const response = await fetch(WEBHOOK_URL, {

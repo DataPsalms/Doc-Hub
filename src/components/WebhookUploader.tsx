@@ -37,6 +37,8 @@ export default function WebhookUploader() {
     formData.append('file', selectedFile);
     formData.append('fileName', selectedFile.name);
     formData.append('fileType', selectedFile.type);
+    formData.append('fileSize', selectedFile.size.toString());
+    formData.append('userId', 'Abbyingor@gmail.com');
     formData.append('timestamp', new Date().toISOString());
 
     try {
